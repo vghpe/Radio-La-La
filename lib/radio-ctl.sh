@@ -135,6 +135,10 @@ case "${1:-}" in
       # Clean up stale socket
       rm -f "$SOCKET"
       # Launch mpv
+      # reconnect_streamed: reconnect HTTP streams that don't support range
+      # requests (icecast/AAC radio). On resume after pause or a dropped
+      # connection mpv reconnects to the live position rather than failing.
+      # reconnect_on_network_error: retry on transient network errors.
       "$MPV" \
         --no-video \
         --input-ipc-server="$SOCKET" \
@@ -142,6 +146,9 @@ case "${1:-}" in
         --force-media-title="$NAME" \
         --demuxer-max-bytes=256KiB \
         --cache=yes \
+        --stream-lavf-o=reconnect_streamed=1 \
+        --stream-lavf-o-append=reconnect_on_network_error=1 \
+        --script="$SCRIPT_DIR/radio-live-resume.lua" \
         "$URL" &
       # Wait for socket to appear
       for i in $(seq 1 20); do
@@ -157,8 +164,6 @@ case "${1:-}" in
 
   pause)
     if mpv_running; then
-      # Simply toggle pause — the metadata daemon observes the pause property
-      # and handles live-stream reload on resume for all paths (media keys + dropdown button)
       mpv_cmd '{"command":["cycle","pause"]}'
       trigger_swiftbar_refresh
     fi
