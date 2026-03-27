@@ -19,7 +19,6 @@ LAST_DISPLAY=""
 LAST_FETCH=0
 MIN_FETCH_INTERVAL=10  # Don't hit APIs more than once per 10 seconds
 FALLBACK_INTERVAL=15   # Periodic fallback fetch every 15s (covers API-only stations like KEXP/KCRW)
-WAS_PAUSED=false       # Tracks pause state to detect resume
 LAST_RELOAD=0          # Epoch of last stream reload (cooldown to prevent loops)
 
 mpv_running() {
@@ -38,8 +37,9 @@ trigger_swiftbar_refresh() {
   open -g "swiftbar://refreshPlugin?name=radio" 2>/dev/null &
 }
 
-# Reload the live stream (reconnect fresh). Cooldown prevents re-entrant loops
-# from the pause/unpause events that loadfile itself generates.
+# Reload the live stream (reconnect fresh). Only used for dead-stream
+# recovery (idle event). Resume-reload is handled by radio-live-resume.lua.
+# Cooldown prevents re-entrant loops from events that loadfile generates.
 reload_live() {
   local NOW
   NOW=$(now_epoch)
@@ -277,19 +277,9 @@ mpv_cmd '{"command":["observe_property",2,"pause"]}'
 while true; do
   if IFS= read -r -t "$FALLBACK_INTERVAL" LINE <&3; then
     case "$LINE" in
-      # Pause state → true (paused): remember it, refresh UI
-      *'"name":"pause"'*'"data":true'*)
-        WAS_PAUSED=true
-        trigger_swiftbar_refresh
-        ;;
-      # Pause state → false (resumed): reload live stream
-      # The 5s cooldown in reload_live() prevents infinite loops from
-      # the pause/unpause events that loadfile itself generates.
-      *'"name":"pause"'*'"data":false'*)
-        if [ "$WAS_PAUSED" = true ]; then
-          WAS_PAUSED=false
-          reload_live
-        fi
+      # Pause state changed: refresh UI (resume-reload is handled by
+      # the Lua script radio-live-resume.lua inside mpv).
+      *'"name":"pause"'*)
         trigger_swiftbar_refresh
         ;;
       # Stream died (EOF / idle): auto-reconnect to live

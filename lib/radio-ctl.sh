@@ -221,7 +221,6 @@ case "${1:-}" in
   copy)
     # Copy current track info to clipboard
     if [ -f "$TRACK_FILE" ]; then
-      JQ=$(command -v jq 2>/dev/null || echo "/opt/homebrew/bin/jq")
       T=$("$JQ" -r '.title // ""' "$TRACK_FILE" 2>/dev/null)
       A=$("$JQ" -r '.artist // ""' "$TRACK_FILE" 2>/dev/null)
       [ "$T" = "null" ] && T=""

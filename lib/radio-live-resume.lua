@@ -3,6 +3,9 @@
 -- loadfile replace (closes the old TCP connection so stale data in the
 -- OS network buffer is discarded), then unmute when mpv signals the
 -- fresh buffer is ready (paused-for-cache → false).
+--
+-- NEXT/PREV media keys cycle through stations by calling radio-ctl.sh.
+--
 -- Loaded via --script= from radio-ctl.sh.
 
 local is_reloading = false
@@ -59,3 +62,29 @@ mp.observe_property("pause", "bool", function(_, paused)
         mp.msg.info("reloading stream for live resume")
     end
 end)
+
+-- ─── Station cycling via NEXT / PREV media keys ───────────────────────────
+
+local stations = {"fip", "kcrw", "kexp"}
+local state_dir = os.getenv("HOME") .. "/.radio"
+local script_dir = debug.getinfo(1, "S").source:match("^@(.*/)")
+local ctl = script_dir .. "radio-ctl.sh"
+
+local function current_index()
+    local f = io.open(state_dir .. "/current-station", "r")
+    if not f then return 1 end
+    local s = f:read("*l"); f:close()
+    for i, name in ipairs(stations) do
+        if name == s then return i end
+    end
+    return 1
+end
+
+local function switch_station(delta)
+    local i = ((current_index() - 1 + delta) % #stations) + 1
+    mp.msg.info("switching to station: " .. stations[i])
+    mp.command_native_async({"run", ctl, "play", stations[i]}, function() end)
+end
+
+mp.add_key_binding("NEXT", "next-station", function() switch_station(1)  end)
+mp.add_key_binding("PREV", "prev-station", function() switch_station(-1) end)
