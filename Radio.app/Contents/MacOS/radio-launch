@@ -1,0 +1,17 @@
+#!/bin/bash
+# Radio launcher — opens SwiftBar and starts the default station
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CTL="$SCRIPT_DIR/../../../lib/radio-ctl.sh"
+
+# Clear stale track data from previous session
+rm -f "$HOME/.radio/current-track" "$HOME/.radio/recent-tracks"
+
+# Start playing the last station (or FIP as default)
+LAST_STATION=$(cat "$HOME/.radio/current-station" 2>/dev/null || echo "fip")
+"$CTL" play "$LAST_STATION"
+
+# Launch SwiftBar if not running
+if ! pgrep -x "SwiftBar" >/dev/null 2>&1; then
+  open -a "SwiftBar"
+fi
