@@ -13,6 +13,12 @@ local was_muted = false
 local safety_timer = nil
 local initialized = false  -- skip the initial pause=false at mpv startup
 
+local function refresh_swiftbar()
+    mp.command_native_async(
+        {"run", "open", "-g", "swiftbar://refreshPlugin?name=radio"},
+        function() end)
+end
+
 local function do_unmute()
     is_reloading = false
     if safety_timer then
@@ -23,6 +29,7 @@ local function do_unmute()
         mp.set_property("mute", "no")
         mp.msg.info("unmuted: live stream ready")
     end
+    refresh_swiftbar()
 end
 
 -- Unmute as soon as fresh data is buffered from the new connection.
@@ -60,6 +67,9 @@ mp.observe_property("pause", "bool", function(_, paused)
             do_unmute()
         end)
         mp.msg.info("reloading stream for live resume")
+    else
+        -- Pausing: refresh UI immediately so icon updates
+        refresh_swiftbar()
     end
 end)
 
