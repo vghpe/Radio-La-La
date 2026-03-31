@@ -1,7 +1,6 @@
 # Radio La La
 
-FIP, KCRW, and KEXP in your menu bar. Shows current track in Control Center with media key support.
-
+Radio La La is macOS app that lives in the menu bar and plays 3 radio stations. 
 
 ![](images/Screenshot.png)
 
