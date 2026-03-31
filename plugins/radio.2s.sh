@@ -77,6 +77,13 @@ if [ "$PLAYING" = true ]; then
     else
       echo "♫ $LABEL | size=12 length=30"
     fi
+  elif [ "$DISPLAY_MODE" = "artist" ] && [ -n "$ARTIST" ]; then
+    LABEL=$(printf '%s' "$ARTIST" | tr '|' '-')
+    if [ "$PAUSED" = true ]; then
+      echo "⏸ $LABEL | size=12 length=20"
+    else
+      echo "♫ $LABEL | size=12 length=20"
+    fi
   else
     if [ "$PAUSED" = true ]; then
       echo "⏸ | size=14"
@@ -162,11 +169,22 @@ if [ "$PLAYING" = true ] && [ -n "$STATION_NAME" ]; then
     fi
   fi
 
-  # ─── Display mode toggle ──────────────────────────────────
+  # ─── Display mode ─────────────────────────────────────────
+  echo "Show in menu bar | color=#777777 size=11"
   if [ "$DISPLAY_MODE" = "text" ]; then
-    echo "Show icon only | bash=$CTL param1=display param2=icon terminal=false refresh=true"
+    echo "● Track & artist | size=12"
   else
-    echo "Show track in menu bar | bash=$CTL param1=display param2=text terminal=false refresh=true"
+    echo "  Track & artist | bash=$CTL param1=display param2=text terminal=false refresh=true size=12"
+  fi
+  if [ "$DISPLAY_MODE" = "artist" ]; then
+    echo "● Artist only | size=12"
+  else
+    echo "  Artist only | bash=$CTL param1=display param2=artist terminal=false refresh=true size=12"
+  fi
+  if [ "$DISPLAY_MODE" = "icon" ]; then
+    echo "● Icon only | size=12"
+  else
+    echo "  Icon only | bash=$CTL param1=display param2=icon terminal=false refresh=true size=12"
   fi
 
 else
