@@ -2,6 +2,9 @@
 
 FIP, KCRW, and KEXP in your menu bar. Shows current track in Control Center with media key support.
 
+
+![](images/Screenshot.png)
+
 ## Install
 
 ```
