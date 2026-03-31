@@ -2,7 +2,7 @@
 
 Radio La La is macOS app that lives in the menu bar and plays 3 radio stations. 
 
-![](images/Screenshot.png)
+![](images/Screenshot_v2.png)
 
 ## Install
 
