@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# <xbar.title>Radio Now Playing</xbar.title>
+# <xbar.title>Radio La La Now Playing</xbar.title>
 # <xbar.version>v2.0</xbar.version>
 # <xbar.desc>Controls radio playback via mpv with station switching</xbar.desc>
 # <xbar.dependencies>mpv,socat,jq,curl</xbar.dependencies>

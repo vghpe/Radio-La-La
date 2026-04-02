@@ -26,7 +26,7 @@ trigger_swiftbar_refresh() {
 }
 
 notify() {
-  osascript -e "display notification \"$1\" with title \"Radio\"" 2>/dev/null &
+  osascript -e "display notification \"$1\" with title \"Radio La La\"" 2>/dev/null &
 }
 
 # Stream URLs and display names are sourced from radio-stations.sh

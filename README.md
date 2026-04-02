@@ -13,11 +13,11 @@ brew install --cask swiftbar
 
 Clone this repo, then point SwiftBar's plugin folder at the `plugins/` directory (SwiftBar > Preferences > Plugin Folder). The `lib/` scripts are picked up automatically via relative paths.
 
-## Radio.app
+## Radio La La.app
 
-`Radio.app` is a launcher that starts playback and opens SwiftBar in one double-click. It is **not code-signed**, so macOS will block it on first launch. To open it:
+`Radio La La.app` is a launcher that starts playback and opens SwiftBar in one double-click. It is **not code-signed**, so macOS will block it on first launch. To open it:
 
-> Right-click → Open → Open (or run `xattr -cr Radio.app` in the terminal first)
+> Right-click -> Open -> Open (or run `xattr -cr "Radio La La.app"` in the terminal first)
 
 You don't need the app — you can use SwiftBar directly and call `lib/radio-ctl.sh play fip` from the terminal.
 

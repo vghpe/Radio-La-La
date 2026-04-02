@@ -1,5 +1,5 @@
 #!/bin/bash
-# Radio launcher — opens SwiftBar and starts the default station
+# Radio La La launcher - opens SwiftBar and starts the default station
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CTL="$SCRIPT_DIR/../../../lib/radio-ctl.sh"
