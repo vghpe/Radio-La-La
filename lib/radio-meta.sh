@@ -129,38 +129,29 @@ fetch_fip() {
 }
 
 fetch_kcrw() {
-  local DATA
-  DATA=$(curl -sf --max-time 5 "https://tracklist-api.kcrw.com/Music.json")
+  local DATA TRACKS
+  DATA=$(curl -sf --max-time 5 "https://tracklist-api.kcrw.com/latest-playlist?show_title=Eclectic24")
   [ -z "$DATA" ] && return 1
 
-  local TITLE ARTIST ALBUM SPOTIFY_ID
-  TITLE=$("$JQ" -r '.title // ""' <<< "$DATA" 2>/dev/null)
-  ARTIST=$("$JQ" -r '.artist // ""' <<< "$DATA" 2>/dev/null)
-  ALBUM=$("$JQ" -r '.album // ""' <<< "$DATA" 2>/dev/null)
-  SPOTIFY_ID=$("$JQ" -r '.spotify_id // ""' <<< "$DATA" 2>/dev/null)
+  TRACKS=$("$JQ" -c '[ .[] | select((.title // "") != "" and (.artist // "") != "[BREAK]") ]' <<< "$DATA" 2>/dev/null)
+  [ -z "$TRACKS" ] && return 1
 
-  [ "$TITLE" = "null" ] || [ -z "$TITLE" ] && return 1
+  local TITLE ARTIST ALBUM SPOTIFY_ID
+  TITLE=$("$JQ" -r '.[0].title // ""' <<< "$TRACKS" 2>/dev/null)
+  ARTIST=$("$JQ" -r '.[0].artist // ""' <<< "$TRACKS" 2>/dev/null)
+  ALBUM=$("$JQ" -r '.[0].album // ""' <<< "$TRACKS" 2>/dev/null)
+  SPOTIFY_ID=$("$JQ" -r '.[0].spotify_id // ""' <<< "$TRACKS" 2>/dev/null)
+
+  [ -z "$TITLE" ] && return 1
   [ "$ARTIST" = "null" ] && ARTIST=""
   [ "$ALBUM" = "null" ] && ALBUM=""
   [ "$SPOTIFY_ID" = "null" ] && SPOTIFY_ID=""
 
-  # Read previous track info for history accumulation before overwriting
-  local PREV_TITLE PREV_ARTIST
-  PREV_TITLE=$("$JQ" -r '.title // ""' "$TRACK_FILE" 2>/dev/null)
-  PREV_ARTIST=$("$JQ" -r '.artist // ""' "$TRACK_FILE" 2>/dev/null)
-  [ "$PREV_TITLE" = "null" ] && PREV_TITLE=""
-  [ "$PREV_ARTIST" = "null" ] && PREV_ARTIST=""
-
   "$JQ" -n --arg s "KCRW" --arg t "$TITLE" --arg a "$ARTIST" --arg al "$ALBUM" --arg sp "$SPOTIFY_ID" \
     '{station:$s, title:$t, artist:$a, album:$al, spotify_id:$sp}' > "$TRACK_FILE.tmp" && mv "$TRACK_FILE.tmp" "$TRACK_FILE"
 
-  # Accumulate recent tracks locally (Music.json only returns current track)
-  if [ "$TITLE" != "$PREV_TITLE" ] && [ -n "$PREV_TITLE" ]; then
-    local OLD_HISTORY
-    OLD_HISTORY=$(cat "$HISTORY_FILE" 2>/dev/null || echo "[]")
-    echo "$OLD_HISTORY" | "$JQ" --arg t "$PREV_TITLE" --arg a "$PREV_ARTIST" \
-      '[{title:$t, artist:$a}] + . | .[0:4]' > "$HISTORY_FILE.tmp" && mv "$HISTORY_FILE.tmp" "$HISTORY_FILE"
-  fi
+  # Write recent tracks directly from API (5 entries)
+  "$JQ" -c '.[1:6] | map({title, artist})' <<< "$TRACKS" > "$HISTORY_FILE.tmp" && mv "$HISTORY_FILE.tmp" "$HISTORY_FILE"
 
   if [ -n "$ARTIST" ] && [ -n "$TITLE" ]; then
     echo "KCRW: $ARTIST – $TITLE"

@@ -61,10 +61,12 @@ api_now() {
       ;;
 
     kcrw)
-      DATA=$(curl -sf --max-time 8 "https://tracklist-api.kcrw.com/Music.json") || return 1
-      TITLE=$("$JQ" -r '.title // ""' <<< "$DATA" 2>/dev/null)
-      ARTIST=$("$JQ" -r '.artist // ""' <<< "$DATA" 2>/dev/null)
-      ALBUM=$("$JQ" -r '.album // ""' <<< "$DATA" 2>/dev/null)
+      DATA=$(curl -sf --max-time 8 "https://tracklist-api.kcrw.com/latest-playlist?show_title=Eclectic24") || return 1
+      local TRACKS
+      TRACKS=$("$JQ" -c '[ .[] | select((.title // "") != "" and (.artist // "") != "[BREAK]") ]' <<< "$DATA" 2>/dev/null)
+      TITLE=$("$JQ" -r '.[0].title // ""' <<< "$TRACKS" 2>/dev/null)
+      ARTIST=$("$JQ" -r '.[0].artist // ""' <<< "$TRACKS" 2>/dev/null)
+      ALBUM=$("$JQ" -r '.[0].album // ""' <<< "$TRACKS" 2>/dev/null)
       [ "$TITLE" = "null" ] && TITLE=""
       [ "$ARTIST" = "null" ] && ARTIST=""
       [ "$ALBUM" = "null" ] && ALBUM=""
